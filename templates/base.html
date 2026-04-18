@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CINE MAX{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <a href="{{ url_for('index') }}" class="nav-brand">🎬 CINE MAX</a>
+
+  <!-- Hamburger (mobile) -->
+  <button class="nav-hamburger" id="nav-hamburger" aria-label="Menú" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
+
+  <div class="nav-links" id="nav-links">
+    <a href="{{ url_for('index') }}" onclick="closeMenu()">Cartelera</a>
+    {% if session.get('usuario_id') %}
+      <a href="{{ url_for('mis_tiquetes_view') }}" onclick="closeMenu()">Mis Tiquetes</a>
+      <a href="{{ url_for('validar') }}" onclick="closeMenu()">Validar</a>
+      {% if session.get('rol') == 'admin' %}
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-nav-admin" onclick="closeMenu()">Admin</a>
+      {% endif %}
+      <a href="{{ url_for('logout') }}" class="btn-nav" onclick="closeMenu()">Salir ({{ session.get('nombre','') }})</a>
+    {% else %}
+      <a href="{{ url_for('login_view') }}" class="btn-nav" onclick="closeMenu()">Iniciar Sesión</a>
+      <a href="{{ url_for('registro') }}" class="btn-nav-alt" onclick="closeMenu()">Registrarse</a>
+    {% endif %}
+  </div>
+</nav>
+<div class="nav-backdrop" id="nav-backdrop" onclick="closeMenu()"></div>
+
+<!-- ── CONTENT ── -->
+<div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="flash {{ cat }}">{% if cat=='success' %}✅{% else %}⚠️{% endif %} {{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
+<!-- ── FOOTER ── -->
+<footer class="footer-main">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-logo">🎬 CINE MAX</div>
+      <p>La mejor experiencia de cine digital. Compra tus tiquetes en línea, elige tus asientos y disfruta.</p>
+      <div class="footer-social">
+        <a href="#">📘</a><a href="#">📸</a><a href="#">🐦</a><a href="#">▶️</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Navegación</h4>
+      <a href="{{ url_for('index') }}">Cartelera</a>
+      {% if session.get('usuario_id') %}
+      <a href="{{ url_for('mis_tiquetes_view') }}">Mis Tiquetes</a>
+      <a href="{{ url_for('validar') }}">Validar Tiquete</a>
+      {% else %}
+      <a href="{{ url_for('login_view') }}">Iniciar Sesión</a>
+      <a href="{{ url_for('registro') }}">Registrarse</a>
+      {% endif %}
+    </div>
+    <div class="footer-col">
+      <h4>Información</h4>
+      <a href="#">Términos y condiciones</a>
+      <a href="#">Política de privacidad</a>
+      <a href="#">Preguntas frecuentes</a>
+      <a href="#">Contacto</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <p>📍 Cartagena, Colombia</p>
+      <p>📞 (+57) 300 000 0000</p>
+      <p>✉️ info@cinemax.com</p>
+      <p>⏰ Lun - Dom: 10am - 11pm</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 CINE MAX · SENA ADSO19 · Todos los derechos reservados</p>
+    <p>Desarrollado con 🎬 por aprendices SENA</p>
+  </div>
+</footer>
+
+<script>
+function toggleMenu() {
+  const links = document.getElementById('nav-links');
+  const back  = document.getElementById('nav-backdrop');
+  const burger = document.getElementById('nav-hamburger');
+  const open = links.classList.toggle('open');
+  back.classList.toggle('visible', open);
+  burger.classList.toggle('active', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeMenu() {
+  document.getElementById('nav-links').classList.remove('open');
+  document.getElementById('nav-backdrop').classList.remove('visible');
+  document.getElementById('nav-hamburger').classList.remove('active');
+  document.body.style.overflow = '';
+}
+</script>
+</body>
+</html>

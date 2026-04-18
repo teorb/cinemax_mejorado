@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}{{ pelicula.titulo }} · CineApp{% endblock %}
+{% block content %}
+<div class="detalle-pelicula">
+  <div class="detalle-poster">
+    {% if pelicula.imagen_url %}
+      <img src="{{ pelicula.imagen_url }}" alt="{{ pelicula.titulo }}" onerror="this.style.display='none'">
+    {% else %}
+      <div class="poster-placeholder big">🎬</div>
+    {% endif %}
+  </div>
+  <div class="detalle-info">
+    <span class="badge-clasificacion">{{ pelicula.clasificacion }}</span>
+    <h1>{{ pelicula.titulo }}</h1>
+    <div class="detalle-meta">
+      <span>🎭 {{ pelicula.genero }}</span>
+      <span>⏱ {{ pelicula.duracion }} min</span>
+    </div>
+    <p class="detalle-descripcion">{{ pelicula.descripcion }}</p>
+
+    <h3 class="funciones-title">Funciones Disponibles</h3>
+    {% if funciones %}
+    <div class="funciones-list">
+      {% for f in funciones %}
+      <a href="{{ url_for('seleccionar_asientos', id=f.id) }}" class="funcion-btn">
+        <span class="funcion-fecha">{{ f.fecha }}</span>
+        <span class="funcion-hora">{{ f.hora[:5] }}</span>
+        <span class="funcion-precio">${{ "%.0f"|format(f.precio) }}</span>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="no-funciones">No hay funciones disponibles por el momento.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

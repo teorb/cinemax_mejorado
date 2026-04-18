@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard Admin · CineApp{% endblock %}
+{% block content %}
+<div class="admin-header">
+  <h2>Panel Administrativo</h2>
+  <div class="admin-actions">
+    <a href="{{ url_for('nueva_pelicula') }}" class="btn-primary">+ Nueva Pelicula</a>
+    <a href="{{ url_for('nueva_funcion') }}" class="btn-secondary">+ Nueva Funcion</a>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-num">{{ peliculas|length }}</span>
+    <span class="stat-lbl">Peliculas</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-num">{{ funciones|length }}</span>
+    <span class="stat-lbl">Funciones</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-num">{{ total_tiquetes }}</span>
+    <span class="stat-lbl">Tiquetes vendidos</span>
+  </div>
+  <div class="stat-card">
+    <span class="stat-num">${{ "%.0f"|format(total_ingresos) }}</span>
+    <span class="stat-lbl">Ingresos totales</span>
+  </div>
+</div>
+
+<!-- Ranking peliculas mas vistas -->
+<h3 class="section-title">🏆 Peliculas mas vistas</h3>
+<div class="ranking-grid">
+  {% for p in mas_vistas %}
+  <div class="ranking-card">
+    <div class="ranking-pos {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+      #{{ loop.index }}
+    </div>
+    {% if p.imagen_url %}
+    <img src="{{ p.imagen_url }}" alt="{{ p.titulo }}" class="ranking-img" onerror="this.style.display='none'">
+    {% endif %}
+    <div class="ranking-info">
+      <h4>{{ p.titulo }}</h4>
+      <span class="ranking-genero">{{ p.genero }}</span>
+      <div class="ranking-stats">
+        <span>🎟️ {{ p.total_asientos or 0 }} asientos</span>
+        <span>💰 ${{ "%.0f"|format(p.ingresos or 0) }}</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Peliculas -->
+<h3 class="section-title">Peliculas</h3>
+<div class="admin-table-wrap">
+<table class="admin-table">
+  <thead><tr><th>Titulo</th><th>Genero</th><th>Duracion</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+  {% for p in peliculas %}
+  <tr>
+    <td>{{ p.titulo }}</td>
+    <td>{{ p.genero }}</td>
+    <td>{{ p.duracion }} min</td>
+    <td><span class="badge {{ p.estado }}">{{ p.estado }}</span></td>
+    <td>
+      <a href="{{ url_for('editar_pelicula_view', id=p.id) }}" class="btn-edit">Editar</a>
+      <form method="POST" action="{{ url_for('eliminar_pelicula_view', id=p.id) }}" style="display:inline" onsubmit="return confirm('Eliminar?')">
+        <button class="btn-del">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<!-- Funciones -->
+<h3 class="section-title">Funciones</h3>
+<div class="admin-table-wrap">
+<table class="admin-table">
+  <thead><tr><th>Pelicula</th><th>Fecha</th><th>Hora</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+  {% for f in funciones %}
+  <tr>
+    <td>{{ f.titulo }}</td>
+    <td>{{ f.fecha }}</td>
+    <td>{{ f.hora[:5] }}</td>
+    <td>${{ "%.0f"|format(f.precio) }}</td>
+    <td><span class="badge {{ f.estado }}">{{ f.estado }}</span></td>
+    <td>
+      <form method="POST" action="{{ url_for('eliminar_funcion_view', id=f.id) }}" style="display:inline" onsubmit="return confirm('Eliminar?')">
+        <button class="btn-del">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<!-- Reporte ventas -->
+<h3 class="section-title">Reporte de Ventas</h3>
+<div class="admin-table-wrap">
+<table class="admin-table">
+  <thead><tr><th>Pelicula</th><th>Tiquetes vendidos</th><th>Ingresos</th></tr></thead>
+  <tbody>
+  {% for v in ventas %}
+  <tr>
+    <td>{{ v.titulo }}</td>
+    <td>{{ v.tiquetes }}</td>
+    <td>${{ "%.0f"|format(v.ingresos) }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

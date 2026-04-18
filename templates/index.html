@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Cartelera · CineApp{% endblock %}
+{% block content %}
+
+<!-- ── BANNER HERO ── -->
+<div class="banner-hero">
+  <div class="banner-overlay"></div>
+  <div class="banner-content">
+    <div class="banner-badge">🎬 Ahora en cartelera</div>
+    <h1>Vive la magia<br>del cine</h1>
+    <p>Las mejores peliculas, los mejores asientos.<br>Compra tu tiquete en segundos.</p>
+    <div class="banner-btns">
+      <a href="#cartelera" class="btn-primary">Ver cartelera</a>
+      {% if not session.get('usuario_id') %}
+      <a href="{{ url_for('registro') }}" class="btn-outline">Registrarse gratis</a>
+      {% endif %}
+    </div>
+    <div class="banner-stats">
+      <div class="bstat"><span>6</span><small>Peliculas</small></div>
+      <div class="bstat"><span>150</span><small>Asientos</small></div>
+      <div class="bstat"><span>4</span><small>Funciones diarias</small></div>
+    </div>
+  </div>
+  <div class="banner-posters">
+    {% for p in peliculas[:3] %}
+    {% if p.imagen_url %}
+    <div class="banner-poster-item" style="animation-delay:{{ loop.index0 * 0.2 }}s">
+      <img src="{{ p.imagen_url }}" alt="{{ p.titulo }}" onerror="this.style.display='none'">
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+<!-- ── PROMO BAR ── -->
+<div class="promo-bar">
+  <span>🎟️ Compra anticipada con descuento</span>
+  <span>🍿 Combos disponibles en taquilla</span>
+  <span>⭐ Miembros VIP acumulan puntos</span>
+  <span>📱 Tiquetes digitales sin filas</span>
+</div>
+
+<!-- ── CARTELERA ── -->
+<div id="cartelera" class="section-wrap">
+  <div class="section-top">
+    <h2 class="section-title-big">Cartelera</h2>
+    <div class="section-tabs">
+      <span class="tab active">Todos</span>
+      <span class="tab">Estrenos</span>
+      <span class="tab">Preventa</span>
+    </div>
+  </div>
+
+  {% if peliculas %}
+  <div class="peliculas-grid">
+    {% for p in peliculas %}
+    <a href="{{ url_for('detalle_pelicula', id=p.id) }}" class="pelicula-card">
+      <div class="pelicula-poster">
+        {% if p.imagen_url %}
+          <img src="{{ p.imagen_url }}" alt="{{ p.titulo }}"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        {% endif %}
+        <div class="poster-placeholder" {% if p.imagen_url %}style="display:none"{% endif %}>🎬</div>
+        {% if loop.index0 < 3 %}
+          <div class="pelicula-tag estreno">Estreno</div>
+        {% else %}
+          <div class="pelicula-tag preventa">Preventa</div>
+        {% endif %}
+        <div class="poster-overlay">
+          <span class="ver-btn">Ver funciones</span>
+        </div>
+      </div>
+      <div class="pelicula-info">
+        <h3>{{ p.titulo }}</h3>
+        <div class="genero-tags">
+          {% for g in p.genero.split('/') if p.genero %}
+            <span class="genero-tag">{{ g.strip() }}</span>
+          {% endfor %}
+          <span class="genero-tag clas">{{ p.clasificacion }}</span>
+        </div>
+        <div class="pelicula-dur">⏱ {{ p.duracion }} min</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">🎬</div>
+    <h3>No hay peliculas en cartelera</h3>
+    <p>Vuelve pronto para ver las novedades</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── SECCION EXPERIENCIA ── -->
+<div class="experiencia-section">
+  <h2>Una experiencia unica</h2>
+  <p>Todo lo que necesitas para disfrutar el cine</p>
+  <div class="exp-grid">
+    <div class="exp-card">
+      <div class="exp-icon">🎭</div>
+      <h4>Sala Premium</h4>
+      <p>150 asientos con la mejor vista y comodidad garantizada.</p>
+    </div>
+    <div class="exp-card">
+      <div class="exp-icon">📱</div>
+      <h4>Tiquetes Digitales</h4>
+      <p>Compra en linea y presenta tu codigo en la entrada. Sin filas.</p>
+    </div>
+    <div class="exp-card">
+      <div class="exp-icon">🍿</div>
+      <h4>Combos Disponibles</h4>
+      <p>Crispetas, bebidas y mas en nuestra taquilla. El sabor del cine.</p>
+    </div>
+    <div class="exp-card">
+      <div class="exp-icon">🔒</div>
+      <h4>Compra Segura</h4>
+      <p>Tu tiquete tiene un codigo unico. Nadie mas puede usarlo.</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

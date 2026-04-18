@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Mis Tiquetes · CineApp{% endblock %}
+{% block content %}
+<div class="section-header">
+  <h2>Mis Tiquetes</h2>
+</div>
+{% if tiquetes %}
+<div class="tiquetes-lista">
+  {% for t in tiquetes %}
+  <a href="{{ url_for('ver_tiquete', codigo=t.codigo) }}" class="tiquete-item">
+    <div class="tiquete-item-info">
+      <h4>{{ t.titulo }}</h4>
+      <span>{{ t.fecha }} · {{ t.hora[:5] }}</span>
+    </div>
+    <div class="tiquete-item-right">
+      <span class="tiquete-codigo-small">{{ t.codigo }}</span>
+      <span class="badge {{ t.estado }}">{{ t.estado }}</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon">🎟️</div>
+  <h3>No tienes tiquetes aun</h3>
+  <a href="{{ url_for('index') }}" class="btn-primary">Ver Cartelera</a>
+</div>
+{% endif %}
+{% endblock %}

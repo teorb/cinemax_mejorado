@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% block title %}Seleccionar Asientos · CINE MAX{% endblock %}
+{% block content %}
+<div class="asientos-page">
+
+  <!-- Panel izquierdo: info + resumen -->
+  <div class="asientos-left">
+    <a href="{{ url_for('detalle_pelicula', id=funcion.pelicula_id) }}" class="back-link">← Volver</a>
+    <h2>{{ funcion.titulo }}</h2>
+    <div class="funcion-meta">
+      <span>📅 {{ funcion.fecha }}</span>
+      <span>⏰ {{ funcion.hora[:5] }}</span>
+      <span>🎫 ${{ "%.0f"|format(funcion.precio) }} / asiento</span>
+    </div>
+
+    <div class="seleccion-resumen">
+      <h4>Asientos seleccionados</h4>
+      <div id="resumen-asientos"><p class="hint">Toca un asiento para seleccionarlo</p></div>
+      <div class="total-box">
+        <span>Total:</span>
+        <span id="total-precio">$0</span>
+      </div>
+    </div>
+
+    <!-- Botón comprar (en mobile aparece fijo abajo) -->
+    <button type="button" class="btn-primary full btn-comprar-trigger"
+            id="btn-ver-factura" disabled onclick="abrirModal()">
+      🎟 Comprar Tiquete
+    </button>
+  </div>
+
+  <!-- Panel derecho: mapa de asientos -->
+  <div class="asientos-right">
+    <div class="pantalla-wrap">
+      <div class="pantalla">PANTALLA</div>
+    </div>
+
+    <form method="POST" action="{{ url_for('comprar') }}" id="form-compra">
+      <input type="hidden" name="funcion_id" value="{{ funcion.id }}">
+      <input type="hidden" name="email_destino" id="input-email-destino" value="">
+
+      <div class="grid-asientos">
+        {% for fila, asientos in filas.items() %}
+        <div class="fila-asientos">
+          <span class="fila-label">{{ fila }}</span>
+          {% for a in asientos %}
+          <button type="button"
+            class="asiento {% if a.estado == 'ocupado' %}ocupado{% else %}disponible{% endif %}"
+            data-id="{{ a.id }}"
+            data-fila="{{ a.fila }}"
+            data-col="{{ a.columna }}"
+            {% if a.estado == 'ocupado' %}disabled{% endif %}>
+            {{ a.columna }}
+          </button>
+          {% endfor %}
+          <span class="fila-label">{{ fila }}</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="leyenda">
+        <span class="leyenda-item"><span class="dot disponible"></span> Disponible</span>
+        <span class="leyenda-item"><span class="dot seleccionado"></span> Seleccionado</span>
+        <span class="leyenda-item"><span class="dot ocupado"></span> Ocupado</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Barra fija mobile -->
+<div class="mobile-comprar-bar" id="mobile-bar" style="display:none">
+  <div class="mobile-bar-info">
+    <span id="mobile-asientos-count">0 asientos</span>
+    <span id="mobile-total">$0</span>
+  </div>
+  <button class="btn-primary" onclick="abrirModal()" id="mobile-btn-comprar" disabled>
+    Comprar
+  </button>
+</div>
+
+<!-- ══════════════ MODAL FACTURA ══════════════ -->
+<div class="modal-overlay" id="modal-factura" onclick="cerrarModalOverlay(event)">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <div>
+        <div class="modal-logo">🎬 CINE MAX</div>
+        <div class="modal-subtitulo">Resumen de compra</div>
+      </div>
+      <button class="modal-close" onclick="cerrarModal()" aria-label="Cerrar">✕</button>
+    </div>
+
+    <!-- Película -->
+    <div class="factura-pelicula-wrap">
+      {% if funcion.imagen_url %}
+      <img src="{{ funcion.imagen_url }}" alt="{{ funcion.titulo }}"
+           onerror="this.style.display='none'" class="factura-poster">
+      {% endif %}
+      <div>
+        <div class="factura-titulo-peli">{{ funcion.titulo }}</div>
+        <span class="factura-badge">{{ funcion.clasificacion }}</span>
+      </div>
+    </div>
+
+    <!-- Datos -->
+    <div class="factura-datos">
+      <div class="factura-fila">
+        <span class="fl">📅 Fecha</span>
+        <span class="fv">{{ funcion.fecha }}</span>
+      </div>
+      <div class="factura-fila">
+        <span class="fl">⏰ Hora</span>
+        <span class="fv">{{ funcion.hora[:5] }}</span>
+      </div>
+      <div class="factura-fila">
+        <span class="fl">🪑 Asientos</span>
+        <span class="fv" id="modal-asientos">—</span>
+      </div>
+      <div class="factura-fila">
+        <span class="fl">🎟 Cantidad</span>
+        <span class="fv" id="modal-cantidad">0</span>
+      </div>
+      <div class="factura-fila">
+        <span class="fl">💰 Precio unitario</span>
+        <span class="fv">${{ "%.0f"|format(funcion.precio) }}</span>
+      </div>
+      <div class="factura-fila factura-total-row">
+        <span class="fl">💳 Total a pagar</span>
+        <span class="fv factura-total-val" id="modal-total">$0</span>
+      </div>
+    </div>
+
+    <!-- Correo -->
+    <div class="factura-email-box">
+      <label class="email-lbl" for="campo-email">
+        📧 ¿A qué correo enviamos tu tiquete con QR?
+      </label>
+      <input type="email" id="campo-email"
+             placeholder="tucorreo@ejemplo.com" class="email-inp" autocomplete="email">
+      <span class="email-hint">Opcional · Recibirás la factura y el código QR</span>
+      <div id="email-error" class="email-error" style="display:none">
+        Ingresa un correo válido o déjalo vacío para continuar sin correo.
+      </div>
+    </div>
+
+    <!-- Acciones -->
+    <div class="modal-acciones">
+      <button class="btn-cancelar" onclick="cerrarModal()">✕ Cancelar</button>
+      <button class="btn-confirmar" onclick="confirmarCompra()">✅ Confirmar compra</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const precio = {{ funcion.precio }};
+const seleccionados = new Set();
+
+document.querySelectorAll('.asiento.disponible').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.dataset.id;
+    if (seleccionados.has(id)) {
+      seleccionados.delete(id);
+      btn.classList.remove('seleccionado');
+    } else {
+      seleccionados.add(id);
+      btn.classList.add('seleccionado');
+    }
+    actualizarResumen();
+  });
+});
+
+function actualizarResumen() {
+  document.querySelectorAll('input[name="asientos"]').forEach(i => i.remove());
+
+  const resumen  = document.getElementById('resumen-asientos');
+  const totalEl  = document.getElementById('total-precio');
+  const btn      = document.getElementById('btn-ver-factura');
+  const mBar     = document.getElementById('mobile-bar');
+  const mBtn     = document.getElementById('mobile-btn-comprar');
+  const mCount   = document.getElementById('mobile-asientos-count');
+  const mTotal   = document.getElementById('mobile-total');
+
+  if (seleccionados.size === 0) {
+    resumen.innerHTML = '<p class="hint">Toca un asiento para seleccionarlo</p>';
+    totalEl.textContent = '$0';
+    btn.disabled = true;
+    mBar.style.display = 'none';
+    return;
+  }
+
+  let html = '';
+  seleccionados.forEach(id => {
+    const el = document.querySelector(`.asiento[data-id="${id}"]`);
+    html += `<span class="tag-asiento">${el.dataset.fila}${el.dataset.col}</span>`;
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'asientos'; inp.value = id;
+    document.getElementById('form-compra').appendChild(inp);
+  });
+
+  const totalVal = seleccionados.size * precio;
+  const totalFmt = '$' + totalVal.toLocaleString('es-CO');
+
+  resumen.innerHTML = html;
+  totalEl.textContent = totalFmt;
+  btn.disabled = false;
+
+  // Mobile bar
+  mBar.style.display = 'flex';
+  mBtn.disabled = false;
+  mCount.textContent = seleccionados.size + ' asiento' + (seleccionados.size > 1 ? 's' : '');
+  mTotal.textContent = totalFmt;
+}
+
+function abrirModal() {
+  if (seleccionados.size === 0) return;
+
+  let arr = [];
+  seleccionados.forEach(id => {
+    const el = document.querySelector(`.asiento[data-id="${id}"]`);
+    arr.push(el.dataset.fila + el.dataset.col);
+  });
+
+  document.getElementById('modal-asientos').textContent = arr.join(', ');
+  document.getElementById('modal-cantidad').textContent = seleccionados.size;
+  document.getElementById('modal-total').textContent =
+    '$' + (seleccionados.size * precio).toLocaleString('es-CO');
+  document.getElementById('campo-email').value = '';
+  document.getElementById('email-error').style.display = 'none';
+  document.getElementById('modal-factura').classList.add('activo');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+  document.getElementById('modal-factura').classList.remove('activo');
+  document.body.style.overflow = '';
+}
+
+function cerrarModalOverlay(e) {
+  if (e.target === document.getElementById('modal-factura')) cerrarModal();
+}
+
+function confirmarCompra() {
+  const emailVal = document.getElementById('campo-email').value.trim();
+  const emailErr = document.getElementById('email-error');
+  if (emailVal && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+    emailErr.style.display = 'block';
+    return;
+  }
+  emailErr.style.display = 'none';
+  document.getElementById('input-email-destino').value = emailVal;
+  document.getElementById('form-compra').submit();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+</script>
+{% endblock %}

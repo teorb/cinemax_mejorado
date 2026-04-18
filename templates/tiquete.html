@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Tiquete {{ tiquete.codigo }} · CineApp{% endblock %}
+{% block content %}
+<div class="tiquete-page">
+  <div class="tiquete-card">
+    <div class="tiquete-header">
+      <span class="tiquete-logo">🎬 CineApp</span>
+      <span class="tiquete-estado {{ tiquete.estado }}">{{ tiquete.estado.upper() }}</span>
+    </div>
+    <div class="tiquete-body">
+      <h2>{{ tiquete.titulo }}</h2>
+      <div class="tiquete-detalles">
+        <div class="tiquete-det-item">
+          <label>Fecha</label>
+          <span>{{ tiquete.fecha }}</span>
+        </div>
+        <div class="tiquete-det-item">
+          <label>Hora</label>
+          <span>{{ tiquete.hora[:5] }}</span>
+        </div>
+        <div class="tiquete-det-item">
+          <label>Asientos</label>
+          <span>{% for a in asientos %}{{ a.fila }}{{ a.columna }}{% if not loop.last %}, {% endif %}{% endfor %}</span>
+        </div>
+        <div class="tiquete-det-item">
+          <label>Total</label>
+          <span class="tiquete-total">${{ "%.0f"|format(tiquete.total) }}</span>
+        </div>
+      </div>
+
+      <div class="tiquete-codigo-box">
+        <label>Codigo de entrada</label>
+        <div class="tiquete-codigo">{{ tiquete.codigo }}</div>
+      </div>
+
+      {% if qr_base64 %}
+      <div class="tiquete-qr-box">
+        <label>Escanea para validar</label>
+        <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR Tiquete" class="tiquete-qr">
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="tiquete-footer">
+      <a href="{{ url_for('mis_tiquetes_view') }}" class="btn-secondary">Mis Tiquetes</a>
+      <a href="{{ url_for('index') }}" class="btn-primary">Comprar otro</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
