@@ -119,19 +119,27 @@ def comprar():
         return redirect(url_for('seleccionar_asientos', id=funcion_id))
 
     # Enviar correo si proporcionaron email
-    if email_destino:
+ if email_destino:
         try:
             tiquete, asientos_det, qr_base64 = obtener_tiquete(codigo)
             asientos_str = ', '.join(f"{a['fila']}{a['columna']}" for a in asientos_det)
-            html_correo  = render_template('email_factura.html',
+
+            from io import BytesIO
+            import base64 as b64
+            qr_bytes = b64.b64decode(qr_base64)
+
+            html_correo = render_template('email_factura.html',
                 tiquete=tiquete, asientos=asientos_det,
-                asientos_str=asientos_str, qr_base64=qr_base64,
+                asientos_str=asientos_str,
                 nombre_usuario=session.get('nombre', ''))
+
             msg = Message(
                 subject=f'🎬 Tu tiquete CINE MAX – {tiquete["titulo"]}',
                 recipients=[email_destino],
                 html=html_correo
             )
+            msg.attach('qr_tiquete.png', 'image/png', qr_bytes,
+                       disposition='inline', headers={'Content-ID': '<qr_tiquete>'})
             mail.send(msg)
             flash('¡Compra exitosa! Te enviamos tu tiquete por correo.', 'success')
         except Exception as e:
