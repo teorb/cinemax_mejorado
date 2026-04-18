@@ -39,13 +39,12 @@
       <div style="font-size:1.5rem;font-weight:800;letter-spacing:.2em;color:#3b82f6;font-family:monospace;">{{ tiquete.codigo }}</div>
     </div>
 
-    {% if qr_base64 %}
     <div style="margin:0 22px 22px;text-align:center;background:#fff;border-radius:10px;padding:16px;">
-      <div style="font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Escanea para validar en la entrada</div>
-      <img src="data:image/png;base64,{{ qr_base64 }}" alt="QR" style="width:160px;height:160px;display:block;margin:0 auto;border-radius:8px;">
-      <div style="margin-top:8px;font-size:.72rem;color:#94a3b8;">Código único · No transferible</div>
-    </div>
-    {% endif %}
+  <div style="font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;">Escanea para validar en la entrada</div>
+  <img src="cid:qr_tiquete" alt="QR" style="width:160px;height:160px;display:block;margin:0 auto;border-radius:8px;">
+  <div style="margin-top:8px;font-size:.72rem;color:#94a3b8;">Código único · No transferible</div>
+</div>
+    
   </div>
 
   <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;padding:14px 18px;margin-bottom:18px;">
