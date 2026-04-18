@@ -119,18 +119,34 @@ def comprar():
         return redirect(url_for('seleccionar_asientos', id=funcion_id))
 
     # Enviar correo si proporcionaron email
- if email_destino:
+if email_destino:
         try:
             tiquete, asientos_det, qr_base64 = obtener_tiquete(codigo)
             asientos_str = ', '.join(f"{a['fila']}{a['columna']}" for a in asientos_det)
 
-            from io import BytesIO
+            # Subir QR a Cloudinary
+            import cloudinary
+            import cloudinary.uploader
             import base64 as b64
+
+            cloudinary.config(
+                cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'),
+                api_key    = os.environ.get('CLOUDINARY_API_KEY'),
+                api_secret = os.environ.get('CLOUDINARY_API_SECRET')
+            )
+
             qr_bytes = b64.b64decode(qr_base64)
+            upload_result = cloudinary.uploader.upload(
+                f"data:image/png;base64,{qr_base64}",
+                public_id=f"qr_{codigo}",
+                overwrite=True
+            )
+            qr_url = upload_result['secure_url']
 
             html_correo = render_template('email_factura.html',
                 tiquete=tiquete, asientos=asientos_det,
                 asientos_str=asientos_str,
+                qr_url=qr_url,
                 nombre_usuario=session.get('nombre', ''))
 
             msg = Message(
@@ -138,8 +154,6 @@ def comprar():
                 recipients=[email_destino],
                 html=html_correo
             )
-            msg.attach('qr_tiquete.png', 'image/png', qr_bytes,
-                       disposition='inline', headers={'Content-ID': '<qr_tiquete>'})
             mail.send(msg)
             flash('¡Compra exitosa! Te enviamos tu tiquete por correo.', 'success')
         except Exception as e:
