@@ -643,6 +643,14 @@ img { max-width:100%; display:block; }
     z-index: 200; transition: transform .3s ease;
     transform: translateX(100%);
   }
+  .nav-links a {
+    color: var(--white) !important;
+    background: transparent;
+    padding: .85rem 1rem; border-radius: 10px; font-size: .95rem;
+  }
+  .nav-links a:hover {
+    background: var(--bg3) !important;
+  }
   .nav-links.open { display: flex; transform: translateX(0); }
   .nav-links a    { padding: .85rem 1rem; border-radius: 10px; font-size: .95rem; }
 
