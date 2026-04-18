@@ -32,13 +32,10 @@ def crear_funcion(pelicula_id, fecha, hora, precio):
     conn = get_connection()
     cur = conn.cursor()
     try:
-        cur.execute("INSERT INTO funciones (pelicula_id, fecha, hora, precio) VALUES (%s, %s, %s, %s)",
+        cur.execute("""INSERT INTO funciones (pelicula_id, fecha, hora, precio) 
+            VALUES (%s, %s, %s, %s) RETURNING id""",
             (pelicula_id, fecha, hora, precio))
-        funcion_id = cur.fetchone()
-        cur.execute("SELECT id FROM funciones WHERE pelicula_id=%s AND fecha=%s AND hora=%s",
-            (pelicula_id, fecha, hora))
-        f = cur.fetchone()
-        funcion_id = f['id']
+        funcion_id = cur.fetchone()['id']
         cur.execute("SELECT id FROM asientos")
         asientos = cur.fetchall()
         for a in asientos:
