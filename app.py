@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_mail import Mail, Message
 import sys, os
+import cloudinary
+import cloudinary.uploader
+import base64 as b64
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from database import inicializar_db
@@ -20,6 +23,13 @@ app.config['MAIL_USERNAME']       = os.environ.get('MAIL_USERNAME', '')
 app.config['MAIL_PASSWORD']       = os.environ.get('MAIL_PASSWORD', '')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_USERNAME', 'noreply@cinemax.com')
 mail = Mail(app)
+
+# ── CLOUDINARY CONFIG ─────────────────────────────────────────────────────────
+cloudinary.config(
+    cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    api_key    = os.environ.get('CLOUDINARY_API_KEY'),
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET')
+)
 
 inicializar_db()
 
@@ -118,24 +128,11 @@ def comprar():
         flash(f'Error: {error}', 'error')
         return redirect(url_for('seleccionar_asientos', id=funcion_id))
 
-    # Enviar correo si proporcionaron email
-if email_destino:
+    if email_destino:
         try:
             tiquete, asientos_det, qr_base64 = obtener_tiquete(codigo)
             asientos_str = ', '.join(f"{a['fila']}{a['columna']}" for a in asientos_det)
 
-            # Subir QR a Cloudinary
-            import cloudinary
-            import cloudinary.uploader
-            import base64 as b64
-
-            cloudinary.config(
-                cloud_name = os.environ.get('CLOUDINARY_CLOUD_NAME'),
-                api_key    = os.environ.get('CLOUDINARY_API_KEY'),
-                api_secret = os.environ.get('CLOUDINARY_API_SECRET')
-            )
-
-            qr_bytes = b64.b64decode(qr_base64)
             upload_result = cloudinary.uploader.upload(
                 f"data:image/png;base64,{qr_base64}",
                 public_id=f"qr_{codigo}",
