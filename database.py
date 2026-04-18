@@ -77,5 +77,24 @@ def inicializar_db():
             precio_unitario REAL NOT NULL
         )
     """)
+
+    # Crear asientos (10 filas A-J, 15 columnas)
+    cur.execute("SELECT COUNT(*) as c FROM asientos")
+    r = cur.fetchone()
+    if r['c'] == 0:
+        filas = ['A','B','C','D','E','F','G','H','I','J']
+        for fila in filas:
+            for col in range(1, 16):
+                cur.execute("INSERT INTO asientos (fila, columna) VALUES (%s, %s)", (fila, col))
+
+    # Crear admin por defecto
+    cur.execute("SELECT COUNT(*) as c FROM usuarios WHERE email='admin@cine.com'")
+    r = cur.fetchone()
+    if r['c'] == 0:
+        cur.execute("""
+            INSERT INTO usuarios (nombre, email, password, rol)
+            VALUES ('Admin', 'admin@cine.com', 'admin123', 'admin')
+        """)
+
     conn.commit()
     conn.close()
