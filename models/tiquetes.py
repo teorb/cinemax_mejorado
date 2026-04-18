@@ -20,24 +20,25 @@ def comprar_tiquete(usuario_id, funcion_id, asiento_ids, precio_unitario):
     cur = conn.cursor()
     try:
         for asiento_id in asiento_ids:
-            cur.execute("SELECT estado FROM asiento_funcion WHERE funcion_id=? AND asiento_id=?",
+            cur.execute("SELECT estado FROM asiento_funcion WHERE funcion_id = %s AND asiento_id = %s",
                 (funcion_id, asiento_id))
             r = cur.fetchone()
-            if not r or (r['estado'] if hasattr(r,'keys') else r[0]) != 'disponible':
+            if not r or r['estado'] != 'disponible':
                 conn.close()
                 return None, "El asiento ya esta ocupado"
 
         codigo = generar_codigo()
         total  = len(asiento_ids) * precio_unitario
 
-        cur.execute("INSERT INTO tiquetes (codigo, usuario_id, funcion_id, total) VALUES (?,?,?,?)",
+        cur.execute("INSERT INTO tiquetes (codigo, usuario_id, funcion_id, total) VALUES (%s, %s, %s, %s)",
             (codigo, usuario_id, funcion_id, total))
-        tiquete_id = cur.lastrowid
+        cur.execute("SELECT id FROM tiquetes WHERE codigo = %s", (codigo,))
+        tiquete_id = cur.fetchone()['id']
 
         for asiento_id in asiento_ids:
-            cur.execute("INSERT INTO detalle_tiquete (tiquete_id, asiento_id, precio_unitario) VALUES (?,?,?)",
+            cur.execute("INSERT INTO detalle_tiquete (tiquete_id, asiento_id, precio_unitario) VALUES (%s, %s, %s)",
                 (tiquete_id, asiento_id, precio_unitario))
-            cur.execute("UPDATE asiento_funcion SET estado='ocupado' WHERE funcion_id=? AND asiento_id=?",
+            cur.execute("UPDATE asiento_funcion SET estado = 'ocupado' WHERE funcion_id = %s AND asiento_id = %s",
                 (funcion_id, asiento_id))
 
         conn.commit()
@@ -53,18 +54,18 @@ def obtener_tiquete(codigo):
     cur.execute("""SELECT t.*, f.fecha, f.hora, f.precio, p.titulo, p.imagen_url,
         u.nombre as usuario_nombre
         FROM tiquetes t
-        JOIN funciones f ON t.funcion_id=f.id
-        JOIN peliculas p ON f.pelicula_id=p.id
-        LEFT JOIN usuarios u ON t.usuario_id=u.id
-        WHERE t.codigo=?""", (codigo,))
+        JOIN funciones f ON t.funcion_id = f.id
+        JOIN peliculas p ON f.pelicula_id = p.id
+        LEFT JOIN usuarios u ON t.usuario_id = u.id
+        WHERE t.codigo = %s""", (codigo,))
     row = cur.fetchone()
     if not row:
         conn.close()
         return None, [], None
     tiquete = dict(row)
     cur.execute("""SELECT a.fila, a.columna FROM detalle_tiquete dt
-        JOIN asientos a ON dt.asiento_id=a.id
-        WHERE dt.tiquete_id=?""", (tiquete['id'],))
+        JOIN asientos a ON dt.asiento_id = a.id
+        WHERE dt.tiquete_id = %s""", (tiquete['id'],))
     asientos = [dict(r) for r in cur.fetchall()]
     conn.close()
     qr_base64 = generar_qr_base64(codigo)
@@ -73,7 +74,7 @@ def obtener_tiquete(codigo):
 def validar_tiquete(codigo):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM tiquetes WHERE codigo=?", (codigo,))
+    cur.execute("SELECT * FROM tiquetes WHERE codigo = %s", (codigo,))
     row = cur.fetchone()
     if not row:
         conn.close()
@@ -85,7 +86,7 @@ def validar_tiquete(codigo):
     if t['estado'] == 'cancelado':
         conn.close()
         return t, "Tiquete cancelado"
-    cur.execute("UPDATE tiquetes SET estado='usado' WHERE codigo=?", (codigo,))
+    cur.execute("UPDATE tiquetes SET estado = 'usado' WHERE codigo = %s", (codigo,))
     conn.commit()
     conn.close()
     return t, "Valido"
@@ -95,9 +96,9 @@ def mis_tiquetes(usuario_id):
     cur = conn.cursor()
     cur.execute("""SELECT t.*, p.titulo, f.fecha, f.hora
         FROM tiquetes t
-        JOIN funciones f ON t.funcion_id=f.id
-        JOIN peliculas p ON f.pelicula_id=p.id
-        WHERE t.usuario_id=?
+        JOIN funciones f ON t.funcion_id = f.id
+        JOIN peliculas p ON f.pelicula_id = p.id
+        WHERE t.usuario_id = %s
         ORDER BY t.fecha_compra DESC""", (usuario_id,))
     rows = cur.fetchall()
     conn.close()
@@ -108,8 +109,8 @@ def reporte_ventas():
     cur = conn.cursor()
     cur.execute("""SELECT p.titulo, COUNT(t.id) as tiquetes, SUM(t.total) as ingresos
         FROM tiquetes t
-        JOIN funciones f ON t.funcion_id=f.id
-        JOIN peliculas p ON f.pelicula_id=p.id
+        JOIN funciones f ON t.funcion_id = f.id
+        JOIN peliculas p ON f.pelicula_id = p.id
         WHERE t.estado != 'cancelado'
         GROUP BY p.titulo ORDER BY ingresos DESC""")
     rows = cur.fetchall()
@@ -127,7 +128,7 @@ def peliculas_mas_vistas():
         LEFT JOIN funciones f ON p.id = f.pelicula_id
         LEFT JOIN tiquetes t ON f.id = t.funcion_id AND t.estado != 'cancelado'
         LEFT JOIN detalle_tiquete dt ON t.id = dt.tiquete_id
-        GROUP BY p.id
+        GROUP BY p.id, p.titulo, p.imagen_url, p.genero
         ORDER BY total_asientos DESC""")
     rows = cur.fetchall()
     conn.close()
