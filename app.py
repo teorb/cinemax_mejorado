@@ -257,5 +257,43 @@ def eliminar_funcion_view(id):
     flash('Funcion eliminada', 'success')
     return redirect(url_for('admin_dashboard'))
 
+# ── RECUPERAR CONTRASEÑA ──────────────────────────────────────────────────────
+@app.route('/recuperar', methods=['GET', 'POST'])
+def recuperar():
+    paso = 1
+    email_verificado = None
+    mensaje = None
+
+    if request.method == 'POST':
+        if 'email' in request.form and 'nueva_password' not in request.form:
+            email = request.form['email'].strip()
+            if email_existe(email):
+                paso = 2
+                email_verificado = email
+            else:
+                mensaje = 'No existe una cuenta con ese correo'
+                paso = 1
+
+        elif 'nueva_password' in request.form:
+            email = request.form['email'].strip()
+            nueva = request.form['nueva_password'].strip()
+            confirmar = request.form['confirmar_password'].strip()
+            if nueva != confirmar:
+                mensaje = 'Las contraseñas no coinciden'
+                paso = 2
+                email_verificado = email
+            else:
+                from database import get_connection
+                conn = get_connection()
+                cur = conn.cursor()
+                cur.execute("UPDATE usuarios SET password=%s WHERE email=%s", (nueva, email))
+                conn.commit()
+                conn.close()
+                flash('Contraseña actualizada. Inicia sesión.', 'success')
+                return redirect(url_for('login_view'))
+
+    return render_template('recuperar.html', paso=paso,
+                           email_verificado=email_verificado, mensaje=mensaje)
+
 if __name__ == '__main__':
     app.run(debug=True)
