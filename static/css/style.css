@@ -667,6 +667,15 @@ img { max-width:100%; display:block; }
   .nav-links a:hover { background: #1a2235 !important; }
   .btn-nav-alt { background: var(--blue) !important; }
   .btn-nav-admin { background: var(--accent) !important; color: #000 !important; }
+
+   /* Asientos mobile */
+  .asientos-right { padding: 1rem 0.5rem; }
+  .grid-asientos  { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .asientos-page  { gap: 1rem; }
+  .asientos-left  { padding: 1rem; }
+  .asiento { width: 24px; height: 24px; font-size: .55rem; }
+  .fila-asientos { gap: .25rem; }
+} 
    
   /* Container */
   .container { padding: 1rem; }
