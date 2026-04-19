@@ -632,6 +632,7 @@ img { max-width:100%; display:block; }
    RESPONSIVE — Mobile (≤ 640px)
 ══════════════════════════════════════════ */
 @media (max-width: 640px) {
+  /* Navbar hamburger */
   .nav-hamburger { display: flex; }
   .nav-links {
     display: none;
@@ -664,24 +665,10 @@ img { max-width:100%; display:block; }
     border: none !important;
     display: block;
     text-decoration: none;
+    width: 100%;
   }
-  .nav-links a:hover {
-    background: #1a2235 !important;
-  }
-  .btn-nav, .btn-nav-alt, .btn-nav-admin {
-    text-align: center;
-  }
-}
-  .nav-links a {
-    color: var(--white) !important;
-    background: transparent;
-    padding: .85rem 1rem; border-radius: 10px; font-size: .95rem;
-  }
-  .nav-links a:hover {
-    background: var(--bg3) !important;
-  }
-  .nav-links.open { display: flex; transform: translateX(0); }
-  .nav-links a    { padding: .85rem 1rem; border-radius: 10px; font-size: .95rem; }
+  .nav-links a:hover { background: #1a2235 !important; }
+  .btn-nav, .btn-nav-alt, .btn-nav-admin { text-align: center; }
 
   /* Container */
   .container { padding: 1rem; }
@@ -731,11 +718,10 @@ img { max-width:100%; display:block; }
   .tiquete-item { flex-direction: column; align-items: flex-start; }
   .tiquete-item-right { flex-direction: row; align-items: center; gap: .7rem; }
 
-  /* Modal (bottom sheet en mobile) */
+  /* Modal bottom sheet */
   .modal-overlay { align-items: flex-end; padding: 0; }
   .modal-box     { border-radius: 18px 18px 0 0; max-height: 95vh; max-width: 100%; }
 
-  /* Padding ajuste modal mobile bar */
   body.has-bar .container { padding-bottom: 5rem; }
 }
 
