@@ -649,9 +649,7 @@ img { max-width:100%; display:block; }
     z-index: 200;
     box-shadow: 0 10px 30px rgba(0,0,0,.5);
   }
-  .nav-links.open {
-    display: flex;
-  }
+  .nav-links.open { display: flex; }
   .nav-links a {
     color: #f1f5f9 !important;
     padding: .75rem 1.5rem;
@@ -668,15 +666,6 @@ img { max-width:100%; display:block; }
   .btn-nav-alt { background: var(--blue) !important; }
   .btn-nav-admin { background: var(--accent) !important; color: #000 !important; }
 
-   /* Asientos mobile */
-  .asientos-right { padding: 1rem 0.5rem; }
-  .grid-asientos  { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .asientos-page  { gap: 1rem; }
-  .asientos-left  { padding: 1rem; }
-  .asiento { width: 24px; height: 24px; font-size: .55rem; }
-  .fila-asientos { gap: .25rem; }
-} 
-   
   /* Container */
   .container { padding: 1rem; }
 
@@ -701,8 +690,13 @@ img { max-width:100%; display:block; }
   .detalle-meta, .funciones-list { justify-content: center; }
 
   /* Asientos */
-  .asiento { width: 24px; height: 24px; font-size: .55rem; }
-  .fila-asientos { gap: .25rem; }
+  .asientos-right { padding: 0.5rem; overflow: hidden; }
+  .grid-asientos  { overflow-x: scroll; -webkit-overflow-scrolling: touch; padding-bottom: 0.5rem; }
+  .asientos-page  { gap: 1rem; }
+  .asientos-left  { padding: 1rem; }
+  .asiento { width: 20px; height: 20px; font-size: .5rem; border-radius: 3px; }
+  .fila-asientos { gap: .2rem; }
+  .fila-label { font-size: .6rem; min-width: 14px; }
 
   /* Tiquete */
   .tiquete-detalles { grid-template-columns: 1fr 1fr; }
@@ -731,6 +725,7 @@ img { max-width:100%; display:block; }
 
   body.has-bar .container { padding-bottom: 5rem; }
 }
+
 
 /* ══════════════════════════════════════════
    RESPONSIVE — XS (≤ 380px)
